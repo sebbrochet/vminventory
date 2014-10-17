@@ -1,0 +1,124 @@
+#!/usr/bin/env python
+
+from vminventory.commands import cmd_list_orphaned_vm, cmd_add_to_inventory
+
+COMMAND_DISPATCHER = {
+    "list_orphaned_vm": cmd_list_orphaned_vm,
+    "add_to_inventory": cmd_add_to_inventory,
+}
+
+DEFAULT_PORT=443
+
+def get_command_and_check_args(args):
+    import os
+
+    args_ok = True
+
+    if args.scope and not os.path.exists(args.scope):
+        print 'Error: scope file "%s" not found.' % args.scope
+        args_ok = False
+   
+    if args.config and not os.path.exists(args.config):
+        print 'Error: config file "%s" not found.' % args.config
+        args_ok = False
+ 
+    if args.port < 0 or args.port > 65535:
+        print 'Error: port should be in the 0-65535 range'
+        args_ok = False
+
+    if not args.user:
+        print "Error: 'user' parameter is mandatory."
+        args_ok = False
+
+    if not args.password:
+        print "Error: 'password' parameter is mandatory."
+        args_ok = False
+
+    command = args.command.lower()
+    command_proc = COMMAND_DISPATCHER.get(command, None)
+
+    if not command_proc:
+        print 'Error: command "%s" is unknown, please refer to help for the list of allowed commands.' % args.command
+        args_ok = False
+
+    return args_ok, command_proc
+
+class ArgsWithConfig(object):
+    pass
+
+def conf_get_IFP(config, section, option, default):
+    if config.has_option(section, option):
+        return config.get(section, option)
+    else:
+        return default
+
+def conf_get_IFP_int(config, section, option, default):
+    if config.has_option(section, option):
+        return config.getint(section, option)
+    else:
+        return default
+
+
+def get_args_with_config_IFN(args):
+    args_with_config = ArgsWithConfig()
+
+    import os
+
+    if args.config and os.path.exists(args.config):
+        DUMMY_SECTION = '__global__'
+        import ConfigParser
+        import StringIO
+        ini_str = '[%s]\n' % DUMMY_SECTION  + open(args.config, 'r').read()
+        ini_fp = StringIO.StringIO(ini_str)
+        config = ConfigParser.RawConfigParser()
+        config.readfp(ini_fp)
+
+        def update_args_with_ini_IFN(option, option_type = str):
+            if config.has_option(DUMMY_SECTION, option):
+               if option_type == str:
+                       setattr(args_with_config, option, config.get(DUMMY_SECTION, option))
+               elif option_type == int:
+                       setattr(args_with_config, option, config.getint(DUMMY_SECTION, option))
+               else:
+                   raise Exception("Type not supported %s" % option_type)
+
+        update_args_with_ini_IFN('scope')
+        update_args_with_ini_IFN('user')
+        update_args_with_ini_IFN('password')
+        update_args_with_ini_IFN('target')
+        update_args_with_ini_IFN('port', int)
+        update_args_with_ini_IFN('resourcepool')
+        update_args_with_ini_IFN('datacenter')
+
+    return args_with_config
+
+def main():
+    from vminventory import __version__
+    import argparse
+
+    parser = argparse.ArgumentParser(description='vCenter inventory update from .vmx files tool.',
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('command',          type=str, help="Command to execute (%s)" % ", ".join(sorted(COMMAND_DISPATCHER.keys())))
+    parser.add_argument('-s', '--scope',    type=str, default='', help="Limit command to act on scope defined in a file")
+    parser.add_argument('-u', '--user',     type=str, help="Specify the user account to use to connect to vCenter")
+    parser.add_argument('-p', '--password', type=str, help="Specify the password associated with the user account")
+    parser.add_argument('-t', '--target',   type=str, help="Specify the vCenter host to connect to")
+    parser.add_argument('-o', '--port',     type=int, default=DEFAULT_PORT, help='Port to connect on (default is %d)'% DEFAULT_PORT)
+    parser.add_argument('-r', '--resourcepool',  type=str, default='', help="Specify the name of the resource pool to add VM in (default is 1st one)")
+    parser.add_argument('-d', '--datacenter',  type=str, default='', help="Specify the datacenter name to run commands on (default is all datacenters)")
+    parser.add_argument('-c', '--config',   type=str, default='', help="Configuration file to use")
+    parser.add_argument('-v', '--version', action='version', help="Print program version and exit.", version="%s %s" % ("%(prog)s", __version__))
+
+    args = parser.parse_args()
+
+    args_with_config = get_args_with_config_IFN(args)
+    
+    parser.parse_args(namespace = args_with_config)
+
+    args_ok, command_proc = get_command_and_check_args(args_with_config)
+    
+    if args_ok and command_proc:
+        command_proc(args_with_config)
+
+if __name__ == '__main__':
+    main()
