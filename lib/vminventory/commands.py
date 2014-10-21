@@ -43,6 +43,10 @@ def get_friendly_name(entity):
     return friendly_name 
     
 
+def get_friendly_folder_name(folder):
+    full_name = get_full_name(folder)
+    return '/'.join(full_name.split('/')[1:])
+
 def get_service_instance(args):
     service_instance = None
 
@@ -259,13 +263,13 @@ def get_vm_folder_IFP(args):
     content = service_instance.RetrieveContent()
     object_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.Folder], True)
 
-    folder = content.rootFolder
+    folder = None
 
     for current_folder in object_view.view:
         if 'VirtualMachine' in current_folder.childType:
-            #if current_folder ==
-            folder = current_folder
-            break
+            if not args.folder or (args.folder and get_friendly_folder_name(current_folder) == args.folder):
+                folder = current_folder
+                break
 
     return folder
 
@@ -276,6 +280,7 @@ def cmd_add_to_inventory(args):
         print "You can use the 'list_resourcepool' command to display them with a friendly name."
         return
 
+    print "Checking if resourcepool parameter is OK..."
     resource_pool = get_resource_pool_IFP(args)
 
     if not resource_pool:
@@ -283,16 +288,22 @@ def cmd_add_to_inventory(args):
         print "You can use the 'list_resourcepool' command to display them with a friendly name."
         return
 
+    print "Checking if folder parameter is OK..."
+    folder = get_vm_folder_IFP(args)
+
+    if not folder:
+        print "Error: folder '%s' not found" % args.folder
+        print "You can use the 'list_folder' command to display them with a friendly name."
+        return
+
     print "Looking for orphaned VM..."
  
     vmx_data_not_in_inventory = get_vmx_data_not_in_inventory(args)
 
     if vmx_data_not_in_inventory:
-        folder = get_vm_folder_IFP(args)
-
         for datastore_vm, fulldsname, vmfold in vmx_data_not_in_inventory:
             datastore_path = "[%s] %s/%s.vmx" % (fulldsname, vmfold, datastore_vm)
-            status_str = "Adding '%s' in inventory '%s': " % (datastore_path, get_full_name(folder))
+            status_str = "Adding '%s' in inventory '%s': " % (datastore_path, get_friendly_folder_name(folder))
             print status_str,
 
             import sys
@@ -308,6 +319,7 @@ def cmd_add_to_inventory(args):
                 print "OK"
             else:
                 print "NOK"
+                print "Error: %s" % task.info.error
     else:
         print "No vmx files to add in inventory."     
 
@@ -319,3 +331,12 @@ def cmd_list_resourcepool(args):
     for resourcepool in object_view.view:
         if is_in_datacenter(resourcepool, args.datacenter): 
             print get_friendly_name(resourcepool)
+
+def cmd_list_vm_folder_IFP(args):
+    service_instance = get_service_instance(args)
+    content = service_instance.RetrieveContent()
+    object_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.Folder], True)
+
+    for folder in object_view.view:
+        if 'VirtualMachine' in folder.childType and is_in_datacenter(folder, args.datacenter):
+            print get_friendly_folder_name(folder)

@@ -25,14 +25,14 @@ Usage:
 
 ```
 usage: vminventory [-h] [-s SCOPE] [-u USER] [-p PASSWORD] [-t TARGET]
-                   [-o PORT] [-r RESOURCEPOOL] [-d DATACENTER] [-c CONFIG]
-                   [-v]
+                   [-o PORT] [-r RESOURCEPOOL] [-f FOLDER] [-d DATACENTER]
+                   [-c CONFIG] [-v]
                    command
 
 vCenter inventory update from .vmx files tool.
 
 positional arguments:
-  command               Command to execute (add_to_inventory,
+  command               Command to execute (add_to_inventory, list_folder,
                         list_orphaned_vm, list_resourcepool)
 
 optional arguments:
@@ -47,7 +47,9 @@ optional arguments:
   -o PORT, --port PORT  Port to connect on (default is 443)
   -r RESOURCEPOOL, --resourcepool RESOURCEPOOL
                         Specify the name of the resource pool to add VM in
-                        (default is 1st one)
+  -f FOLDER, --folder FOLDER
+                        Specify the name of the folder to add VM in (default
+                        is 1st one)
   -d DATACENTER, --datacenter DATACENTER
                         Specify the datacenter name to run commands on
                         (default is all datacenters)

@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-from vminventory.commands import cmd_list_orphaned_vm, cmd_add_to_inventory, cmd_list_resourcepool
+from vminventory.commands import cmd_list_orphaned_vm, cmd_add_to_inventory, cmd_list_resourcepool, cmd_list_vm_folder_IFP
 
 COMMAND_DISPATCHER = {
     "list_orphaned_vm": cmd_list_orphaned_vm,
     "add_to_inventory": cmd_add_to_inventory,
     "list_resourcepool": cmd_list_resourcepool,
+    "list_folder" : cmd_list_vm_folder_IFP,
 }
 
 DEFAULT_PORT=443
@@ -89,6 +90,7 @@ def get_args_with_config_IFN(args):
         update_args_with_ini_IFN('target')
         update_args_with_ini_IFN('port', int)
         update_args_with_ini_IFN('resourcepool')
+        update_args_with_ini_IFN('folder')
         update_args_with_ini_IFN('datacenter')
 
     return args_with_config
@@ -105,7 +107,8 @@ def main():
     parser.add_argument('-p', '--password', type=str, help="Specify the password associated with the user account")
     parser.add_argument('-t', '--target',   type=str, help="Specify the vCenter host to connect to")
     parser.add_argument('-o', '--port',     type=int, default=DEFAULT_PORT, help='Port to connect on (default is %d)'% DEFAULT_PORT)
-    parser.add_argument('-r', '--resourcepool',  type=str, default='', help="Specify the name of the resource pool to add VM in (default is 1st one)")
+    parser.add_argument('-r', '--resourcepool',  type=str, default='', help="Specify the name of the resource pool to add VM in")
+    parser.add_argument('-f', '--folder',  type=str, default='', help="Specify the name of the folder to add VM in (default is 1st one)")
     parser.add_argument('-d', '--datacenter',  type=str, default='', help="Specify the datacenter name to run commands on (default is all datacenters)")
     parser.add_argument('-c', '--config',   type=str, default='', help="Configuration file to use")
     parser.add_argument('-v', '--version', action='version', help="Print program version and exit.", version="%s %s" % ("%(prog)s", __version__))
