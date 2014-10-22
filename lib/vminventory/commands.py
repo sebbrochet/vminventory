@@ -245,6 +245,8 @@ def cmd_list_orphaned_vm(args):
 
 
 def get_resource_pool_IFP(args):
+    import sys
+
     service_instance = get_service_instance(args)
     content = service_instance.RetrieveContent()
     object_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.ResourcePool], True)
@@ -252,7 +254,7 @@ def get_resource_pool_IFP(args):
     resourcepool = None
 
     for current_resourcepool in object_view.view:
-        if get_friendly_name(current_resourcepool) == args.resourcepool:
+        if get_friendly_name(current_resourcepool) == args.resourcepool.decode(sys.stdout.encoding or 'utf-8'):
             resourcepool = current_resourcepool
             break
 
@@ -260,6 +262,8 @@ def get_resource_pool_IFP(args):
 
         
 def get_vm_folder_IFP(args):
+    import sys
+
     service_instance = get_service_instance(args)
     content = service_instance.RetrieveContent()
     object_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.Folder], True)
@@ -268,7 +272,7 @@ def get_vm_folder_IFP(args):
 
     for current_folder in object_view.view:
         if 'VirtualMachine' in current_folder.childType:
-            if not args.folder or (args.folder and get_friendly_folder_name(current_folder) == args.folder):
+            if not args.folder or (args.folder and get_friendly_folder_name(current_folder) == args.folder.decode(sys.stdout.encoding or 'utf-8')):
                 folder = current_folder
                 break
 
