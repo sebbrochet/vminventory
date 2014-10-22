@@ -58,7 +58,7 @@ optional arguments:
   -v, --version         Print program version and exit.
 ```
 
-`scope` of VM to be listed/exported/imported can be defined in a file by listing the short VM names, one by line.   
+`scope` of VM (vmx files) to be included in commands can be defined in a file by listing the short VM names, one by line.   
 A line starting with a `#` is considered as comment and won't be interpreted.     
 
 `config` format is one argument by line (i.e argname=value), argument names are the same ones than the CLI (scope, user, password, ...).   

@@ -36,11 +36,15 @@ def get_command_and_check_args(args):
         print "Error: 'password' parameter is mandatory."
         args_ok = False
 
+    if not args.target:
+        print "Error: 'target' parameter is mandatory."
+        args_ok = False
+
     command = args.command.lower()
     command_proc = COMMAND_DISPATCHER.get(command, None)
 
     if not command_proc:
-        print 'Error: command "%s" is unknown, please refer to help for the list of allowed commands.' % args.command
+        print "Error: command '%s' is unknown, please refer to help for the list of allowed commands." % args.command
         args_ok = False
 
     return args_ok, command_proc

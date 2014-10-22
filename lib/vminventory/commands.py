@@ -92,8 +92,8 @@ def is_in_datacenter(vm, datacenter_name):
     return datacenter_name == '' or get_full_name(vm).split('/')[1] == datacenter_name
 
 
-def is_in_scope(vm, vms_from_scope):
-    return vms_from_scope is None or vm.name in vms_from_scope
+def is_in_scope(vmfold, vms_from_scope):
+    return vms_from_scope is None or vmfold in vms_from_scope
 
 
 def get_all_vmx_data(target, service_instance, vms_from_scope, datacenter_name):
@@ -118,7 +118,8 @@ def get_all_vmx_data(target, service_instance, vms_from_scope, datacenter_name):
                     vmfold = vmfold[1:]
                     if vmfold[-1] == '/':
                         vmfold = vmfold[:-1]
-                    vmx_data_in_datastore.append((target, vmfold, dsfile, datacenter, fulldsname))
+                    if is_in_scope(vmfold, vms_from_scope):
+                        vmx_data_in_datastore.append((target, vmfold, dsfile, datacenter, fulldsname))
                 except Exception, e:
                     print "Caught exception : " + str(e)
                     return []
