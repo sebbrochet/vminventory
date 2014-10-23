@@ -3,7 +3,7 @@
 This command-line tool lets you update your vCenter inventory based on .vmx files not already linked to VMs.
 
 Requirements
-* linux box
+* linux or windows box
 * Python 2.6 or higher
 * [argparse](https://docs.python.org/3/library/argparse.html) library
 * [pyvmomi](https://github.com/vmware/pyvmomi) library
