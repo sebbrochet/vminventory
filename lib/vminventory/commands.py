@@ -45,7 +45,18 @@ def get_friendly_name(entity):
 
 def get_friendly_folder_name(folder):
     full_name = get_full_name(folder)
-    return '/'.join(full_name.split('/')[1:])
+
+    parts = full_name.split('/')
+
+    friendly_name = ""
+
+    if len(parts) == 3:
+        friendly_name = parts[1]
+    elif len(parts) > 3:
+        friendly_name = '%s/%s' % (parts[1], '/'.join(parts[3:]))
+
+    return friendly_name
+
 
 def get_service_instance(args):
     service_instance = None
